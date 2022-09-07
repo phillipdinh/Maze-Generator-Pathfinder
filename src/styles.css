@@ -1,0 +1,82 @@
+.App {
+  height: 100vh;
+}
+body {
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+}
+
+nav {
+  height: 36px;
+  display: flex;
+  padding: 20px 36px;
+  box-shadow: 0px 2.98256px 7.4564px rgba(0, 0, 0, 0.1);
+  background-color: snow;
+}
+
+input[type="number"] {
+  margin: 5px;
+  height: 40px;
+  width: 80px;
+  text-indent: 10px;
+  border: 1px solid #444;
+  border-radius: 5px;
+  display: block;
+}
+.submit-button {
+  position: absolute;
+  left: 13px;
+}
+
+.maze-div {
+  padding: 5px;
+  width: 50%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.game-maze {
+  box-sizing: border-box;
+  margin-top: 5px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 5px;
+  width: 50%;
+  border: 1px solid black;
+  aspect-ratio: 16/9;
+}
+.node {
+  outline: 1px solid rgb(175, 216, 248);
+  color: blue;
+  border-style: solid;
+  border-width: 5px;
+  border-color: black;
+  color: white;
+  aspect-ratio: 1;
+}
+
+.maze-button {
+  position: relative;
+  margin: 5px;
+  border: 1px solid #444;
+  border-radius: 5px;
+}
+
+.size-form {
+  float: left;
+}
+
+#start {
+  background-color: green;
+}
+
+#finish {
+  background-color: red;
+}
+
+#active {
+  background-color: purple;
+}
+#not-active {
+  background-color: white;
+}
