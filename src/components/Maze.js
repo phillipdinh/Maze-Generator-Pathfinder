@@ -58,6 +58,26 @@ export default function Maze() {
     updateMaze(14, 14, "id", "finish");
     visitedCount.current = 0;
   }
+  function emptyMaze() {
+    maze.map((row, rowIdx) => {
+      row.map((node, colIdx) => {
+        updateMaze(colIdx, rowIdx, "left", true);
+        updateMaze(colIdx, rowIdx, "right", true);
+        updateMaze(colIdx, rowIdx, "top", true);
+        updateMaze(colIdx, rowIdx, "bottom", true);
+        if (rowIdx == 0) {
+          updateMaze(colIdx, rowIdx, "top", false);
+        } else if (rowIdx == 14) {
+          updateMaze(colIdx, rowIdx, "bottom", false);
+        }
+        if (colIdx == 0) {
+          updateMaze(colIdx, rowIdx, "left", false);
+        } else if (colIdx == 14) {
+          updateMaze(colIdx, rowIdx, "right", false);
+        }
+      });
+    });
+  }
 
   function updateMaze(col, row, prop, update) {
     let copyMaze = [...maze];
@@ -78,14 +98,11 @@ export default function Maze() {
     return Object.keys(neighbors).filter((direction) => {
       const neighborIdx = neighbors[direction];
 
-      if (neighborIdx[0] == -1 || neighborIdx[1] == -1) {
-        return false;
-      }
-      if (solve && maze[col][row][direction] == false) {
-        return false;
-      } else if (!maze[neighborIdx[0]][neighborIdx[1]].visited) {
-        const goodNeighbor = maze[neighborIdx[0]][neighborIdx[1]];
+      if (neighborIdx[0] == -1 || neighborIdx[1] == -1) return false;
 
+      if (solve && maze[col][row][direction] == false) return false;
+      else if (!maze[neighborIdx[0]][neighborIdx[1]].visited) {
+        const goodNeighbor = maze[neighborIdx[0]][neighborIdx[1]];
         return goodNeighbor;
       }
       return false;
@@ -146,9 +163,7 @@ export default function Maze() {
 
     if (visitedCount.current < maze.length * maze[0].length) {
       const neighbors = getNeighbors(col, row);
-
       const goodNeighbors = checkNeighbors(col, row, neighbors, true);
-
       const randDir = getRand(goodNeighbors);
 
       if (randDir) {
@@ -183,22 +198,18 @@ export default function Maze() {
     });
 
     do {
-      if (list.current.length <= 0) {
-        return resetMaze();
-      }
+      if (list.current.length <= 0) return resetMaze();
+
       var randWall = getRand(list.current);
       var randWallNeighbors = getNeighbors(randWall[0], randWall[1]);
       var oppWall = randWallNeighbors[randWall[2]];
 
       var index = list.current.indexOf(randWall);
-      if (index > -1) {
-        list.current.splice(index, 1);
-      }
+      if (index > -1) list.current.splice(index, 1);
     } while (
       oppWall[0] == -1 ||
       oppWall[1] == -1 ||
-      (maze[randWall[0]][randWall[1]].visited == true &&
-        maze[oppWall[0]][oppWall[1]].visited == true)
+      maze[randWall[0]][randWall[1]].visited == true
     );
 
     updateMaze(oppWall[0], oppWall[1], oppDir[randWall[2]], true);
@@ -207,7 +218,74 @@ export default function Maze() {
     return prim(randWall[0], randWall[1]);
   }
   //////////////////////////////////////////////////////////////////
+  //////////////////////////Recursive Division /////////////////////////////
+  async function recurseDiv() {
+    function chooseOrientation(width, height) {
+      if (width < height) return "horizontal";
+      else if (height < width) return "vertical";
+      else {
+        return Math.floor(Math.random() * 2) == 0 ? "horizontal" : "vertical";
+      }
+    }
 
+    async function drawMaze(wx, wy, px, py, length, horizontal) {
+      // direction
+      const dx = horizontal ? 1 : 0;
+      const dy = horizontal ? 0 : 1;
+
+      for (let i = 0; i < length; i++) {
+        await delay(10);
+        if (wx != px || wy != py) {
+          if (horizontal) {
+            updateMaze(wx, wy, "bottom", false);
+            updateMaze(wx, wy + 1, "top", false);
+          } else {
+            updateMaze(wx, wy, "right", false);
+            updateMaze(wx + 1, wy, "left", false);
+          }
+        }
+        wx += dx;
+        wy += dy;
+      }
+    }
+    async function divide(col, row, width, height, orientation) {
+      if (width < 2 || height < 2) return;
+      const horizontal = orientation == "horizontal";
+
+      var wx = col + (horizontal ? 0 : Math.floor(Math.random() * (width - 2)));
+      var wy =
+        row + (horizontal ? Math.floor(Math.random() * (height - 2)) : 0);
+
+      // passage
+      const px = wx + (horizontal ? Math.floor(Math.random() * width) : 0);
+      const py = wy + (horizontal ? 0 : Math.floor(Math.random() * height));
+
+      // length of wall
+      const length = horizontal ? width : height;
+
+      await drawMaze(wx, wy, px, py, length, horizontal);
+
+      var nx = col;
+      var ny = row;
+
+      var w = horizontal ? width : wx - col + 1;
+      var h = horizontal ? wy - row + 1 : height;
+
+      await divide(nx, ny, w, h, chooseOrientation(w, h));
+
+      nx = horizontal ? col : wx + 1;
+      ny = horizontal ? wy + 1 : row;
+
+      w = horizontal ? width : col + width - wx - 1;
+      h = horizontal ? row + height - wy - 1 : height;
+
+      await divide(nx, ny, w, h, chooseOrientation(w, h));
+    }
+    emptyMaze();
+    divide(0, 0, 15, 15, chooseOrientation(15, 15));
+    return resetMaze();
+  }
+  ///////////////////////////////////////////////////////////////////////
   const styles = {
     display: "inline-grid",
     gridTemplateColumns: `repeat(${15}, 1fr)`,
@@ -223,6 +301,9 @@ export default function Maze() {
           </button>
           <button className="maze-button" onClick={() => prim(0, 0)}>
             Prim
+          </button>
+          <button className="maze-button" onClick={() => recurseDiv()}>
+            Div
           </button>
         </div>
 
