@@ -2,15 +2,15 @@ import React from "react";
 
 export default function Node(props) {
   const styles = {
-    borderTopWidth: props.top ? 0 : "5px",
-    borderRightWidth: props.right ? 0 : "5px",
-    borderBottomWidth: props.bottom ? 0 : "5px",
-    borderLeftWidth: props.left ? 0 : "5px",
+    borderTopWidth: props.top ? 0 : "2px",
+    borderRightWidth: props.right ? 0 : "2px",
+    borderBottomWidth: props.bottom ? 0 : "2px",
+    borderLeftWidth: props.left ? 0 : "2px",
 
-    paddingTop: props.top ? "5px" : 0,
-    paddingBottom: props.bottom ? "5px" : 0,
-    paddingLeft: props.left ? "5px" : 0,
-    paddingRight: props.right ? "5px" : 0,
+    paddingTop: props.top ? "2px" : 0,
+    paddingBottom: props.bottom ? "2px" : 0,
+    paddingLeft: props.left ? "2px" : 0,
+    paddingRight: props.right ? "2px" : 0,
   };
 
   function getID() {
