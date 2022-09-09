@@ -16,17 +16,13 @@ export default function Node(props) {
   function getID() {
     if (props.col == 0 && props.row == 0) {
       return "start";
+    } else if (props.col == 14 && props.row == 14) {
+      return "finish";
     } else if (props.id == "active") {
       return "active";
-    } else if (props.id == "not-active") {
-      return "not-active";
     } else {
-      return "finish";
+      return "not-active";
     }
   }
-  return (
-    <div className="node" style={styles} id={getID()}>
-      C:{props.col} R:{props.row}
-    </div>
-  );
+  return <div className="node" style={styles} id={getID()}></div>;
 }

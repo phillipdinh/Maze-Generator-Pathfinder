@@ -3,47 +3,16 @@
 }
 body {
   margin: 0;
-  font-family: "Poppins", sans-serif;
+  font-family: "Roboto", sans-serif;
+  background-color: whitesmoke;
 }
 
 nav {
-  height: 36px;
+  height: 50px;
   display: flex;
   padding: 20px 36px;
   box-shadow: 0px 2.98256px 7.4564px rgba(0, 0, 0, 0.1);
   background-color: snow;
-}
-
-input[type="number"] {
-  margin: 5px;
-  height: 40px;
-  width: 80px;
-  text-indent: 10px;
-  border: 1px solid #444;
-  border-radius: 5px;
-  display: block;
-}
-.submit-button {
-  position: absolute;
-  left: 13px;
-}
-
-.maze-div {
-  padding: 5px;
-  width: 50%;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.game-maze {
-  box-sizing: border-box;
-  margin-top: 5px;
-  margin-left: auto;
-  margin-right: auto;
-  padding: 5px;
-  width: 50%;
-  border: 1px solid black;
-  aspect-ratio: 16/9;
 }
 .node {
   outline: 1px solid rgb(175, 216, 248);
@@ -55,15 +24,59 @@ input[type="number"] {
   aspect-ratio: 1;
 }
 
-.maze-button {
-  position: relative;
-  margin: 5px;
+.maze {
+  width: 50%;
+}
+.maze-container {
+  display: flex;
+}
+.maze-div {
+  padding-top: 40px;
+  flex: 1;
+  margin-left: auto;
+  margin-right: auto;
+}
+.maze-button-header {
+  font-size: 36px;
+  font-weight: bold;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+.maze-button-div {
+  display: flex;
+  margin-top: 40px;
+  margin-left: 20px;
+  max-height: 300px;
   border: 1px solid #444;
   border-radius: 5px;
+  background-color: snow;
 }
 
-.size-form {
-  float: left;
+.maze-generate-div,
+.maze-solve-div {
+  flex: 1;
+  flex-shrink: 2;
+}
+
+.maze-button {
+  font-size: 28px;
+  height: 60px;
+  width: 140px;
+  margin-bottom: 6px;
+  border: 1px solid gray;
+  border-radius: 5px;
+}
+.clear-maze-button {
+  position: relative;
+  top: 60px;
+  right: 50%;
+  font-size: 32px;
+  font-weight: bold;
+  height: 60px;
+  width: 200px;
+  margin-top: 6px;
+  border: 1px solid gray;
+  border-radius: 5px;
 }
 
 #start {
