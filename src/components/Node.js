@@ -16,7 +16,7 @@ export default function Node(props) {
   function getID() {
     if (props.col == 0 && props.row == 0) {
       return "start";
-    } else if (props.col == 14 && props.row == 14) {
+    } else if (props.col == 15 && props.row == 15) {
       return "finish";
     } else if (props.id == "active") {
       return "active";
