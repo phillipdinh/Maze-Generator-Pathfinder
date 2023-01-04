@@ -20,6 +20,8 @@ export default function Node(props) {
       return "finish";
     } else if (props.id == "active") {
       return "active";
+    } else if (props.id == "done") {
+      return "done";
     } else {
       return "not-active";
     }
