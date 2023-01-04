@@ -1,6 +1,14 @@
 import React from "react";
 import Node from "./Node";
 
+// TODO:
+// Add Solve algorithms:
+// Better colors
+// Disable solve button if maze not generated or if already solved
+// Add overlay for dijkstras
+// Add info for each button
+// Make the maze start and finish randomly
+
 // Used to delay maze graphics
 function delay(ms) {
   return new Promise((resolve) => {
@@ -33,6 +41,8 @@ const createNode = (row, col) => {
     left: false,
     right: false,
     visited: false,
+    distance: Infinity,
+    previousNode: null,
     id: "not-active",
   };
 };
@@ -64,9 +74,11 @@ export default function Maze() {
         updateMaze(colIdx, rowIdx, "top", false);
         updateMaze(colIdx, rowIdx, "bottom", false);
         updateMaze(colIdx, rowIdx, "visited", false);
+        updateMaze(colIdx, rowIdx, "distance", Infinity);
         updateMaze(colIdx, rowIdx, "id", "not-active");
       });
     });
+    stepCount.current = 0;
   }
 
   // Set all nodes visited prop to false
@@ -81,6 +93,7 @@ export default function Maze() {
     updateMaze(15, 15, "id", "finish");
     visitedCount.current = 0;
     list.current.length = 0;
+    setLoadingState(false);
   }
 
   // Remove all walls in maze
@@ -146,12 +159,91 @@ export default function Maze() {
   async function setNewNode(col, row) {
     updateMaze(col, row, "id", "active");
     updateMaze(col, row, "visited", true);
-    await delay(10);
+    await delay(100);
   }
 
+  const [loadingState, setLoadingState] = React.useState(false);
   const [maze, setMaze] = React.useState(mazeInit());
   const list = React.useRef(new Array());
   const visitedCount = React.useRef(0);
+  const stepCount = React.useRef(0);
+
+  ///////////////////////////////////////////////////////////////////////
+  /////////////////////////// Dijkstra's ////////////////////////////////
+  async function dijkstras(col, row) {
+    function updateUnvisitedNeighbors(node) {
+      const neighbors = getNeighbors(node.col, node.row);
+      const goodNeighbors = checkNeighbors(node.col, node.row, neighbors, true);
+
+      for (const dir of goodNeighbors) {
+        updateMaze(
+          neighbors[dir][0],
+          neighbors[dir][1],
+          "distance",
+          node.distance + 1
+        );
+        updateMaze(neighbors[dir][0], neighbors[dir][1], "previousNode", node);
+      }
+    }
+
+    async function showShortestpath(visitedNodesInOrder) {
+      for (const node of visitedNodesInOrder) {
+        await setNewNode(node.col, node.row);
+      }
+    }
+    function getNodesInShortestPathOrder(finishNode) {
+      const nodesInShortestPathOrder = [];
+      let currentNode = finishNode;
+      while (currentNode !== null) {
+        nodesInShortestPathOrder.unshift(currentNode);
+        currentNode = currentNode.previousNode;
+      }
+      return nodesInShortestPathOrder;
+    }
+
+    // Start
+    const visitedNodesInOrder = [];
+    updateMaze(col, row, "distance", 0);
+
+    // Get all nodes into list
+    for (const row of maze) {
+      for (const node of row) {
+        list.current.push(node);
+      }
+    }
+
+    while (list.current.length != 0) {
+      stepCount.current = stepCount.current + 1;
+
+      // Sort nodes by distance
+      list.current.sort((nodeA, nodeB) => nodeA.distance - nodeB.distance);
+
+      // Get closest node
+      const closestNode = list.current.shift();
+
+      // Done
+      if (closestNode.distance === Infinity) {
+        break;
+      }
+
+      if (closestNode.id == "finish") {
+        console.log("FINISH");
+        break;
+        // reset later return resetMaze();
+      }
+
+      await setNewNode(closestNode.col, closestNode.row);
+      updateMaze(closestNode.col, closestNode.row, "id", "done");
+      visitedNodesInOrder.push(closestNode);
+
+      updateUnvisitedNeighbors(closestNode);
+    }
+    const shortestPath = getNodesInShortestPathOrder(maze[15][15]);
+    await showShortestpath(shortestPath);
+    return resetMaze();
+  }
+
+  ///////////////////////////////////////////////////////////////////////
 
   //////////////////////////////////////////////////////////////////
   /////////////////////// Recursive Back Track /////////////////////
@@ -193,6 +285,9 @@ export default function Maze() {
 
   /////////////////////// Solve ////////////////////////////////////
   async function solveRBTDFS(col, row) {
+    stepCount.current = stepCount.current + 1;
+    console.log(stepCount.current);
+
     if (maze[col][row].id == "finish") {
       console.log("FINISH");
       return resetMaze();
@@ -211,7 +306,7 @@ export default function Maze() {
 
         return solveRBTDFS(neighbors[randDir][0], neighbors[randDir][1]);
       } else {
-        updateMaze(col, row, "id", "not-active");
+        updateMaze(col, row, "id", "done");
       }
 
       if (list.current.length > 0) {
@@ -289,7 +384,7 @@ export default function Maze() {
       const dy = horizontal ? 0 : 1;
 
       for (let i = 0; i < length; i++) {
-        await delay(10);
+        await delay(1);
         if (wx != px || wy != py) {
           if (horizontal) {
             updateMaze(wx, wy, "bottom", false);
@@ -337,11 +432,12 @@ export default function Maze() {
       await divide(nx, ny, w, h, chooseOrientation(w, h));
     }
     emptyMaze();
-    divide(0, 0, 16, 16, chooseOrientation(16, 16));
+    await divide(0, 0, 16, 16, chooseOrientation(16, 16));
     return resetMaze();
   }
   //////////////////////////Recursive Division //////////////////////////
   ///////////////////////////////////////////////////////////////////////
+
   const styles = {
     display: "inline-grid",
     gridTemplateColumns: `repeat(${16}, 1fr)`,
@@ -353,23 +449,56 @@ export default function Maze() {
         <div className="maze-generate-div">
           <p className="maze-button-header">Generate</p>
 
-          <button className="maze-button" onClick={() => RBT_DFS(0, 0)}>
+          <button
+            className="maze-button"
+            onClick={() => {
+              setLoadingState(true);
+              RBT_DFS(0, 0);
+            }}
+          >
             DFS
           </button>
-          <button className="maze-button" onClick={() => prim(0, 0)}>
-            Prim
-          </button>
-          <button className="maze-button" onClick={() => recurseDiv()}>
+          <button
+            className="maze-button"
+            onClick={() => {
+              setLoadingState(true);
+              recurseDiv();
+            }}
+          >
             Div
+          </button>
+          <button
+            className="maze-button"
+            onClick={() => {
+              setLoadingState(true);
+              prim(0, 0);
+            }}
+          >
+            Prim
           </button>
         </div>
 
         <div className="maze-solve-div">
           <p className="maze-button-header">Solve</p>
-          <button className="maze-button" onClick={() => solveRBTDFS(0, 0)}>
+          <button
+            className="maze-button"
+            onClick={() => {
+              setLoadingState(true);
+              solveRBTDFS(0, 0);
+            }}
+          >
             DFS
           </button>
+          <button
+            className="maze-button"
+            onClick={() => {
+              dijkstras(0, 0);
+            }}
+          >
+            DIJ
+          </button>
         </div>
+        {loadingState && <div className="loading-overlay"></div>}
       </div>
 
       <div className="maze-div">
@@ -378,8 +507,17 @@ export default function Maze() {
             return (
               <div key={rowIdx}>
                 {block.map((node, nodeIdx) => {
-                  const { col, row, top, bottom, left, right, visited, id } =
-                    node;
+                  const {
+                    col,
+                    row,
+                    top,
+                    bottom,
+                    left,
+                    right,
+                    visited,
+                    distance,
+                    id,
+                  } = node;
                   return (
                     <Node
                       key={nodeIdx}
@@ -390,6 +528,7 @@ export default function Maze() {
                       left={left}
                       right={right}
                       visited={visited}
+                      distance={distance}
                       id={id}
                     ></Node>
                   );
@@ -398,9 +537,15 @@ export default function Maze() {
             );
           })}
         </div>
+
         <button className="clear-maze-button" onClick={() => clearMaze()}>
           Clear Maze
         </button>
+
+        <div className="step-count">
+          Steps:
+          <p className="step-text"> {stepCount.current}</p>
+        </div>
       </div>
     </div>
   );
